@@ -346,11 +346,14 @@
     .watermark {
       position: absolute;
       bottom: 12px;
+      left: 15px;
       right: 15px;
       font-size: 11px;
       color: rgba(0, 0, 0, 0.45);
       pointer-events: none;
       font-weight: 500;
+      display: flex;
+      justify-content: space-between;
     }
 
     .social-icon svg {
@@ -423,19 +426,15 @@
       <section class="item-bank-section" data-html2canvas-ignore="true">
         <div class="bank-header">
           <h2>💣 雷點池 💣</h2>
-          <p style="text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 10px;">(請將以下至少一個項目拖曳至分級表)</p>
+          <p style="text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 10px;">(拖曳至少一個項目至分級表)</p>
         </div>
         <div id="item-bank" class="tier-dropzone item-pool"></div>
       </section>
 
       <main class="tier-list-container">
         <div class="tier-row" data-tier="s">
-          <div class="tier-label s-tier">黑單</div>
+          <div class="tier-label s-tier">很雷</div>
           <div class="tier-dropzone" id="zone-s"></div>
-        </div>
-        <div class="tier-row" data-tier="a">
-          <div class="tier-label a-tier">雷包</div>
-          <div class="tier-dropzone" id="zone-a"></div>
         </div>
         <div class="tier-row" data-tier="b">
           <div class="tier-label b-tier">不適</div>
@@ -450,7 +449,10 @@
           <div class="tier-dropzone" id="zone-d"></div>
         </div>
       </main>
-      <div class="watermark">CosMate 最懂宅圈的交友、找同好APP</div>
+      <div class="watermark">
+        <span class="watermark-left">在 CosMate 設定好你的雷點，讓對的人找到你</span>
+        <span class="watermark-right">CosMate 最懂宅圈的交友、找同好APP</span>
+      </div>
     </div> <!-- end of capture-area -->
   </div>
 
