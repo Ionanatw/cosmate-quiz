@@ -350,7 +350,14 @@
       font-weight: 500;
       display: flex;
       justify-content: space-between;
+      align-items: center;
       margin-top: 8px;
+    }
+
+    .watermark-logo {
+      height: 20px;
+      width: auto;
+      opacity: 0.45;
     }
 
     .social-icon svg {
@@ -423,7 +430,7 @@
       <section class="item-bank-section" data-html2canvas-ignore="true">
         <div class="bank-header">
           <h2>💣 雷點池 💣</h2>
-          <p style="text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 10px;">(拖曳至少一個項目至分級表)</p>
+          <p style="text-align: center; color: #666; font-size: 0.75rem; margin: 2px 0 10px;">(拖曳至少一個項目至分級表)</p>
         </div>
         <div id="item-bank" class="tier-dropzone item-pool"></div>
       </section>
@@ -447,7 +454,7 @@
         </div>
       </main>
       <div class="watermark">
-        <span class="watermark-left">在 CosMate 設定好你的雷點，讓對的人找到你</span>
+        <img src="cosmate-logo.webp" alt="CosMate" class="watermark-logo">
         <span class="watermark-right">CosMate 最懂宅圈的交友、找同好APP</span>
       </div>
     </div> <!-- end of capture-area -->
