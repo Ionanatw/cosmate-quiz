@@ -1,0 +1,326 @@
+:root {
+  /* 整體從暗色系改為清爽明亮的 CosMate 參考色系 */
+  --bg-light: #F4F6F9;
+  --bg-white: #FFFFFF;
+  --primary-blue: #3898EC;
+  --cta-orange: #FF7B00;
+  --hover-pink: #FFDEDE;
+  --text-dark: #333333;
+  --text-gray: #666666;
+
+  /* 階級專用配色 (保留原有色彩) */
+  --tier-s: #ff7b72;
+  --tier-a: #ffa657;
+  --tier-b: #fce883;
+  --tier-c: #79c0ff; /* 白眼: 改為淺藍 */
+  --tier-d: #7ee787; /* 無感: 改為綠色 */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  background-color: var(--bg-light);
+  /* 參考 A 站加上點點背景特效 */
+  background-image: radial-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  color: var(--text-dark);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+}
+
+.brand-logo {
+  max-width: 50px; /* 縮小 40% (原 150px) -> 經用戶反饋再次縮小 */
+  height: auto;
+  margin: 0 auto 1.5rem;
+  display: block;
+  object-fit: contain;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 900px;
+  background: var(--bg-white);
+  border-radius: 8px; /* 縮小圓角 */
+  padding: 1.5rem; /* 稍微縮小內距符合手機呈現 */
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* 截圖區塊確保背景正確 */
+#capture-area {
+  background: var(--bg-white);
+  padding: 1rem;
+  border-radius: 8px; /* 縮小圓角 */
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+header h1 {
+  font-size: 1.8rem; /* 再縮小 1 級 */
+  color: var(--primary-blue);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+header p {
+  color: var(--text-gray);
+  font-size: 1.25rem; /* 字級加大 2 級 */
+  font-weight: 600; /* 加重字重 */
+}
+
+/* 保留分級表原有色彩及格式 */
+
+
+.tier-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 1rem;
+  background: #000;
+  border: 4px solid #000;
+  border-radius: 4px; /* 縮小圓角 */
+  overflow: hidden;
+}
+
+.tier-row {
+  display: flex;
+  min-height: 90px;
+  background: #1e1e1e;
+  border-bottom: 1px solid #555; /* 顏色再變淺一點 */
+}
+
+.tier-row:last-child {
+  border-bottom: none;
+}
+
+.tier-label {
+  flex: 0 0 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem; /* 再大一級 */
+  font-weight: bold;
+  color: #111;
+  text-align: center;
+  padding: 0.5rem;
+  word-break: keep-all;
+}
+
+.s-tier { background-color: var(--tier-s); }
+.a-tier { background-color: var(--tier-a); }
+.b-tier { background-color: var(--tier-b); }
+.c-tier { background-color: var(--tier-c); }
+.d-tier { background-color: var(--tier-d); }
+
+.tier-dropzone {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  align-content: flex-start;
+  min-height: 90px;
+}
+
+.item-bank-section {
+  background: #f8f9fa;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  padding: 1rem;
+  margin: 0 auto 1.5rem; /* 與下方分級表對齊 */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bank-header h2 {
+  color: var(--text-dark);
+  font-size: 1.1rem;
+  margin-bottom: 0.8rem;
+  text-align: center;
+}
+
+.item-pool {
+  min-height: 120px;
+}
+
+.draggable-item {
+  background: var(--bg-white);
+  color: var(--text-dark);
+  border: 1px solid #d1d5db;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px; /* 縮小圓角 */
+  cursor: grab;
+  user-select: none;
+  font-weight: 500;
+  font-size: 0.95rem; /* 調小字級比照原版 */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  touch-action: manipulation; /* 手機端操作最佳化 */
+}
+
+/* 拖曳時的效果由 SortableJS class 控制 */
+.sortable-ghost {
+  opacity: 0.4;
+  background-color: var(--hover-pink);
+  border-color: var(--primary-blue);
+}
+
+.controls {
+  margin: 1.5rem 0;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
+}
+
+.cta-btn {
+  background: var(--primary-blue);
+  color: #fff;
+  border: none;
+  padding: 10px 15px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(56, 152, 236, 0.3);
+  transition: transform 0.2s;
+  flex: 1;
+  max-width: 180px;
+  white-space: nowrap;
+}
+
+.cta-btn:hover {
+  transform: translateY(-2px);
+  background: #2a82d0;
+}
+
+.secondary-btn {
+  background: transparent;
+  color: var(--text-gray);
+  border: 1px solid var(--text-gray);
+  padding: 10px 15px;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+  max-width: 180px;
+  white-space: nowrap;
+}
+
+.secondary-btn:hover {
+  color: var(--text-dark);
+  border-color: var(--text-dark);
+  background: #eee;
+}
+
+.cosmate-footer {
+  width: 100%;
+  max-width: 900px;
+  background: rgba(56, 152, 236, 0.1); /* 改為透明淺藍色 */
+  border-radius: 8px;
+  padding: 1.8rem 1.5rem; /* 高度縮減約 10% */
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.ad-content h2 {
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+.footer-cta-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  max-width: fit-content;
+  margin: 0 auto;
+}
+
+.cosmate-download-btn {
+  display: inline-block;
+  background: var(--primary-blue); /* 改為淺藍色 */
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1.05rem;
+  padding: 10px 25px; /* 高度調整與主按鈕同高 */
+  border-radius: 6px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 10px rgba(56, 152, 236, 0.3);
+  line-height: 24px;
+}
+
+.cosmate-download-btn:hover {
+  background: #2a82d0;
+  transform: scale(1.02);
+}
+
+.social-row {
+  display: flex;
+  gap: 8px;
+}
+
+.social-icon {
+  width: 44px; /* 與按鈕同高 (10+10+24) */
+  height: 44px;
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.social-icon:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  position: relative;
+}
+
+.watermark {
+  position: absolute;
+  bottom: 12px;
+  right: 15px;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  font-weight: 500;
+}
+
+.social-icon svg {
+  width: 24px;
+  height: 24px;
+  fill: #000;
+}
+
+@media (max-width: 768px) {
+  header h1 { font-size: 1.5rem; }
+  .brand-logo { height: 40px; }
+  .tier-label { font-size: 1rem; flex: 0 0 70px; }
+  .app-container { padding: 1rem; }
+  .item-bank-section { padding: 1rem; }
+  .controls { flex-direction: row; gap: 8px; }
+  .cta-btn, .secondary-btn { width: auto; flex: 1; font-size: 0.9rem; padding: 10px 5px; }
+  .footer-cta-row { flex-direction: column; width: 100%; }
+  .cosmate-download-btn { width: 100%; }
+}

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>動漫圈雷點分級表 - CosMate</title>
+  <style>
+    :root {
+      /* 整體從暗色系改為清爽明亮的 CosMate 參考色系 */
+      --bg-light: #F4F6F9;
+      --bg-white: #FFFFFF;
+      --primary-blue: #3898EC;
+      --cta-orange: #FF7B00;
+      --hover-pink: #FFDEDE;
+      --text-dark: #333333;
+      --text-gray: #666666;
+
+      /* 階級專用配色 (保留原有色彩) */
+      --tier-s: #ff7b72;
+      --tier-a: #ffa657;
+      --tier-b: #fce883;
+      --tier-c: #79c0ff;
+      /* 白眼: 改為淺藍 */
+      --tier-d: #7ee787;
+      /* 無感: 改為綠色 */
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-light);
+      /* 參考 A 站加上點點背景特效 */
+      background-image: radial-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+      background-size: 20px 20px;
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem 1rem;
+    }
+
+    .brand-logo {
+      max-width: 50px;
+      /* 縮小 40% (原 150px) -> 經用戶反饋再次縮小 */
+      height: auto;
+      margin: 0 auto 1.5rem;
+      display: block;
+      object-fit: contain;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 900px;
+      background: var(--bg-white);
+      border-radius: 8px;
+      /* 縮小圓角 */
+      padding: 1.5rem;
+      /* 稍微縮小內距符合手機呈現 */
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    /* 截圖區塊確保背景正確 */
+    #capture-area {
+      background: var(--bg-white);
+      padding: 1rem;
+      border-radius: 8px;
+      /* 縮小圓角 */
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      /* 再縮小 1 級 */
+      color: var(--primary-blue);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    header p {
+      color: var(--text-gray);
+      font-size: 1.25rem;
+      /* 字級加大 2 級 */
+      font-weight: 600;
+      /* 加重字重 */
+    }
+
+    /* 保留分級表原有色彩及格式 */
+
+
+    .tier-list-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-bottom: 1rem;
+      background: #000;
+      border: 4px solid #000;
+      border-radius: 4px;
+      /* 縮小圓角 */
+      overflow: hidden;
+    }
+
+    .tier-row {
+      display: flex;
+      min-height: 90px;
+      background: #1e1e1e;
+      border-bottom: 1px solid #777;
+      /* 顏色再變淺一點 */
+    }
+
+    .tier-row:last-child {
+      border-bottom: none;
+    }
+
+    .tier-label {
+      flex: 0 0 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.7rem;
+      /* 再大一級 */
+      font-weight: bold;
+      color: #111;
+      text-align: center;
+      padding: 0.5rem;
+      word-break: keep-all;
+    }
+
+    .s-tier {
+      background-color: var(--tier-s);
+    }
+
+    .a-tier {
+      background-color: var(--tier-a);
+    }
+
+    .b-tier {
+      background-color: var(--tier-b);
+    }
+
+    .c-tier {
+      background-color: var(--tier-c);
+    }
+
+    .d-tier {
+      background-color: var(--tier-d);
+    }
+
+    .tier-dropzone {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      align-content: flex-start;
+      min-height: 90px;
+    }
+
+    .item-bank-section {
+      background: #f8f9fa;
+      border: 1px dashed #ccc;
+      border-radius: 4px;
+      padding: 1rem;
+      margin: 0 auto 1.5rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .bank-header h2 {
+      color: var(--text-dark);
+      font-size: 1.1rem;
+      margin-bottom: 0.8rem;
+      text-align: center;
+    }
+
+    .item-pool {
+      min-height: 120px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .draggable-item {
+      background: var(--bg-white);
+      color: var(--text-dark);
+      border: 1px solid #d1d5db;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      /* 縮小圓角 */
+      cursor: grab;
+      user-select: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      /* 調小字級比照原版 */
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      touch-action: manipulation;
+      white-space: nowrap;
+    }
+
+    /* 拖曳時的效果由 SortableJS class 控制 */
+    .sortable-ghost {
+      opacity: 0.4;
+      background-color: var(--hover-pink);
+      border-color: var(--primary-blue);
+    }
+
+    .controls {
+      margin: 1.5rem 0;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .cta-btn {
+      background: var(--primary-blue);
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(56, 152, 236, 0.3);
+      transition: transform 0.2s;
+      flex: 1;
+      max-width: 180px;
+      white-space: nowrap;
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      background: #2a82d0;
+    }
+
+    .secondary-btn {
+      background: transparent;
+      color: var(--text-gray);
+      border: 1px solid var(--text-gray);
+      padding: 10px 15px;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex: 1;
+      max-width: 180px;
+      white-space: nowrap;
+    }
+
+    .secondary-btn:hover {
+      color: var(--text-dark);
+      border-color: var(--text-dark);
+      background: #eee;
+    }
+
+    .cosmate-footer {
+      width: 100%;
+      max-width: 900px;
+      background: rgba(56, 152, 236, 0.1);
+      /* 改為透明淺藍色 */
+      border-radius: 8px;
+      padding: 1.8rem 1.5rem;
+      /* 高度縮減約 10% */
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .ad-content h2 {
+      color: var(--text-dark);
+      margin-bottom: 1rem;
+      font-size: 1.3rem;
+      font-weight: bold;
+    }
+
+    .footer-cta-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      max-width: fit-content;
+      margin: 0 auto;
+    }
+
+    .cosmate-download-btn {
+      display: inline-block;
+      background: var(--primary-blue);
+      /* 改為淺藍色 */
+      color: #fff;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.05rem;
+      padding: 10px 25px;
+      /* 高度調整與主按鈕同高 */
+      border-radius: 6px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 10px rgba(56, 152, 236, 0.3);
+      line-height: 24px;
+    }
+
+    .cosmate-download-btn:hover {
+      background: #2a82d0;
+      transform: scale(1.02);
+    }
+
+    .social-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .social-icon {
+      width: 44px;
+      /* 與按鈕同高 (10+10+24) */
+      height: 44px;
+      background: #fff;
+      border: 1px solid #000;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .social-icon:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .watermark {
+      position: absolute;
+      bottom: 12px;
+      right: 15px;
+      font-size: 11px;
+      color: rgba(0, 0, 0, 0.45);
+      pointer-events: none;
+      font-weight: 500;
+    }
+
+    .social-icon svg {
+      width: 24px;
+      height: 24px;
+      fill: #000;
+    }
+
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 1.5rem;
+      }
+
+      .brand-logo {
+        height: 40px;
+      }
+
+      .tier-label {
+        font-size: 1rem;
+        flex: 0 0 70px;
+      }
+
+      .app-container {
+        padding: 1rem;
+      }
+
+      .item-bank-section {
+        padding: 1rem;
+      }
+
+      .controls {
+        flex-direction: row;
+        gap: 8px;
+      }
+
+      .cta-btn,
+      .secondary-btn {
+        width: auto;
+        flex: 1;
+        font-size: 0.9rem;
+        padding: 10px 5px;
+      }
+
+      .footer-cta-row {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .cosmate-download-btn {
+        width: 100%;
+      }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.4.0/dist/dom-to-image-more.min.js"></script>
+  <!-- 引入 SortableJS 以獲得完美的跨平台 (包含手機) 拖曳體驗 -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- 這區塊為截圖時會擷取的部分，移出項目池 -->
+    <div id="capture-area">
+      <header>
+        <h1>⚡動漫圈雷點分級表⚡</h1>
+        <p>這我的雷點，不要踩。</p>
+      </header>
+
+
+      <!-- 雷點項目池 (截圖時需忽略) -->
+      <section class="item-bank-section" data-html2canvas-ignore="true">
+        <div class="bank-header">
+          <h2>💣 雷點池 💣</h2>
+          <p style="text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 10px;">(請將以下至少一個項目拖曳至分級表)</p>
+        </div>
+        <div id="item-bank" class="tier-dropzone item-pool"></div>
+      </section>
+
+      <main class="tier-list-container">
+        <div class="tier-row" data-tier="s">
+          <div class="tier-label s-tier">黑單</div>
+          <div class="tier-dropzone" id="zone-s"></div>
+        </div>
+        <div class="tier-row" data-tier="a">
+          <div class="tier-label a-tier">雷包</div>
+          <div class="tier-dropzone" id="zone-a"></div>
+        </div>
+        <div class="tier-row" data-tier="b">
+          <div class="tier-label b-tier">不適</div>
+          <div class="tier-dropzone" id="zone-b"></div>
+        </div>
+        <div class="tier-row" data-tier="c">
+          <div class="tier-label c-tier">白眼</div>
+          <div class="tier-dropzone" id="zone-c"></div>
+        </div>
+        <div class="tier-row" data-tier="d">
+          <div class="tier-label d-tier">無感</div>
+          <div class="tier-dropzone" id="zone-d"></div>
+        </div>
+      </main>
+      <div class="watermark">CosMate 最懂宅圈的交友、找同好APP</div>
+    </div> <!-- end of capture-area -->
+  </div>
+
+
+
+  <!-- 操作區與廣告區 (截圖時不會出現) -->
+  <section class="controls">
+    <button id="btn-export" class="cta-btn">下載我的雷點表</button>
+    <button id="btn-reset" class="secondary-btn">重新開始</button>
+  </section>
+
+  <footer class="cosmate-footer">
+    <div class="ad-content">
+      <h2>CosMate 最懂宅圈的交友、找同好APP</h2>
+      <div class="footer-cta-row">
+        <a href="https://3xt97.app.link/jYuH96KtWZb?utm_source=threads&utm_medium=social&utm_content=link_in_bio"
+          class="cosmate-download-btn" target="_blank">立即下載 CosMate APP</a>
+        <div class="social-row">
+          <a href="https://www.facebook.com/CosMate.io" target="_blank" class="social-icon" title="Facebook">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
+            </svg>
+          </a>
+          <a href="https://www.instagram.com/cosmatedaily/" target="_blank" class="social-icon" title="Instagram">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+            </svg>
+          </a>
+          <a href="https://www.threads.net/@cosmatedaily" target="_blank" class="social-icon" title="Threads"><svg
+              width="24" height="24" viewBox="0 0 192 192" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M141.537 88.988a66.386 66.386 0 0 0-2.518-1.143c-1.482-27.307-16.403-42.94-41.457-43.1h-.044c-15.986 0-28.449 6.396-36.12 18.036l13.779 9.452c5.73-8.695 14.724-10.548 21.348-10.548.076 0 .153 0 .229.001 8.249.052 14.474 2.451 18.503 7.129 2.932 3.405 4.893 8.111 5.864 14.05-7.314-1.243-15.224-1.626-23.68-1.14-23.82 1.371-39.134 15.264-38.105 34.568.521 9.792 5.4 18.216 13.735 23.719 7.047 4.652 16.124 6.927 25.557 6.412 12.458-.683 22.231-5.436 29.049-14.127 5.178-6.6 8.453-15.153 9.899-25.93 5.937 3.583 10.337 8.298 12.767 13.966 4.132 9.635 4.373 25.468-8.546 38.376-11.319 11.308-24.925 16.2-45.488 16.351-22.809-.169-40.06-7.484-51.275-21.742C34.236 152.966 28.808 133.682 28.605 109c.203-24.682 5.63-43.966 16.133-57.317C55.954 37.425 73.205 30.11 96.013 29.941c22.975.17 40.526 7.484 52.171 21.768 5.71 7.026 10.015 15.86 12.853 26.162l16.147-4.308c-3.44-12.68-8.853-23.606-16.219-32.668C147.036 22.607 125.202 13.195 97.07 13h-.113C68.882 13.195 47.292 22.642 32.788 41.08 19.882 57.486 13.224 80.316 13.001 108.933L13 109l.001.067c.223 28.617 6.881 51.447 19.787 67.854C47.292 195.358 68.882 204.806 96.957 205h.113c24.964-.173 42.558-6.708 57.048-22.189 18.963-18.945 18.392-42.692 12.142-57.27-4.484-10.454-13.033-18.945-24.723-24.553ZM98.44 142.507c-10.44.588-21.286-4.098-21.82-14.135-.397-7.442 5.296-15.746 22.461-16.735 1.966-.114 3.895-.169 5.79-.169 6.235 0 12.068.606 17.371 1.765-1.978 24.702-13.58 28.713-23.802 29.274Z">
+              </path>
+            </svg></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
