@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const items = [
         "莫名優越感", "玻璃心", "雙標仔", "強迫推坑", "愛喊老公老婆",
         "模仿動漫腔", "穿痛衣招搖", "瘋狂戰CP", "惡意刷負評",
-        "鄙視新粉", "御宅藝", "AI圖", "爆雷仔", "嚼嚼嚼", "愛玩內梗"
+        "鄙視新粉", "過激打藝", "AI圖", "爆雷仔", "嚼嚼嚼", "愛玩內梗"
     ];
 
     const bank = document.getElementById('item-bank');
@@ -82,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         link.click();
                     }
                 } catch (shareErr) {
-                    // 使用者取消分享不報錯
                     if (shareErr.name !== 'AbortError') {
                         console.error('分享失敗:', shareErr);
                     }
