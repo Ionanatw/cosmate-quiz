@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cosmate-quiz",
+  "compatibility_date": "2026-04-05",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "otakumine"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
