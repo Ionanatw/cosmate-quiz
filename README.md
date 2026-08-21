@@ -6,7 +6,7 @@ CosMate 心理測驗站 — 動漫宅圈互動測驗集合。
 
 | 目錄 | 標題 | 正式網址 |
 |------|------|---------|
-| `otakumine/` | 動漫圈雷點分級表 | https://cosmate-otakumine.pages.dev/ |
+| `otakumine/` | 動漫圈雷點分級表 | https://cosmate-otakumine.pages.dev/otakumine/ |
 
 `shared/` 放跨測驗共用素材。
 
@@ -18,9 +18,23 @@ CosMate 心理測驗站 — 動漫宅圈互動測驗集合。
 |------|-----|
 | Production branch | `main` |
 | Build command | （無，純靜態） |
-| Destination dir | `otakumine` |
+| Destination dir | （repo 根目錄，留空） |
 
-`destination_dir` 是 `otakumine`，所以**只有那個資料夾會被發布**，repo 其他內容不會對外。新增測驗要另開 Pages 專案，或改 destination 並調整路徑。
+`destination_dir` **留空 = 發布 repo 根目錄**，所以每個測驗都有自己的路徑：`/otakumine/`、未來的 `/xxx/`。
+根目錄 `/` 由 `_redirects` 302 導到 `/otakumine/`，讓 IG／Threads 已經散出去的舊網址繼續可用。
+
+### ⚠️ 不要把 destination_dir 設成單一測驗資料夾
+
+2026-08-21 踩過：`destination_dir` 設 `otakumine` 時，那個資料夾**就是站台根目錄**，
+於是 `/otakumine/` 不是真實路徑。Cloudflare Pages 對找不到的路徑會 fallback 回 `index.html`，
+所以 `/otakumine/app.js` 回的是 **20128 bytes 的 `text/html`**（index.html 本人），不是 JS。
+
+症狀極具欺騙性：**CSS 全部 inline，所以版面 100% 正常**，只有雷點池是空的——
+瀏覽器 `Refused to execute script ... MIME type ('text/html') is not executable`，
+`app.js` 從來沒跑過。看起來像「資料沒進來」，實際是路徑結構錯了。
+
+驗收一定要**同時**看 HTTP code、size、**Content-Type** 三項：
+`/otakumine/app.js` 回 `200` 但 type 是 `text/html`，只看 code 會以為是好的。
 
 手動觸發部署（不必 push）：
 
