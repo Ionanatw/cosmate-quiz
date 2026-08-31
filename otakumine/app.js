@@ -1,15 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
     // 預設產生的雷點項目 (依照需求刪除與新增)
     const items = [
-        "莫名優越感", "玻璃心", "雙標仔", "強迫推坑", "愛喊老公老婆",
-        "模仿動漫腔", "穿痛衣招搖", "瘋狂戰CP", "惡意刷負評",
-        "鄙視新粉", "過激打藝", "AI圖", "爆雷仔", "嚼嚼嚼", "愛玩內梗"
+        "莫名優越感", "玻璃心", "雙標仔", "強迫推坑", "瘋狂戰CP",
+        "惡意刷負評", "鄙視新粉", "過激打藝", "AI圖", "爆雷仔",
+        "沒禮貌", "開黃腔／騷擾", "裝熟", "無妝無坑出角"
     ];
 
     const bank = document.getElementById('item-bank');
     const dropzones = document.querySelectorAll('.tier-dropzone');
 
-    // 將 20 個雷點渲染進項目池
+    // 將雷點渲染進項目池
     items.forEach((itemText, index) => {
         const div = document.createElement('div');
         div.classList.add('draggable-item');
