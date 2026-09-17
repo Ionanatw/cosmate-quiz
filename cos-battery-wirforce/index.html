@@ -1077,13 +1077,15 @@ function shareThreads() {
   window.open(`https://www.threads.com/intent/post?${params}`, '_blank');
 }
 
+// LINE 的 url 為必填；FB sharer 以 u 指定分享的網址（quote 非文件參數，保留無害）
 function shareLine() {
-  const text = encodeURIComponent(getShareText());
-  window.open(`https://social-plugins.line.me/lineit/share?text=${text}`, '_blank');
+  const params = new URLSearchParams({ url: window.location.href, text: getShareText() });
+  window.open(`https://social-plugins.line.me/lineit/share?${params}`, '_blank');
 }
 
 function shareFB() {
-  window.open(`https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(getShareText())}`, '_blank');
+  const params = new URLSearchParams({ u: window.location.href, quote: getShareText() });
+  window.open(`https://www.facebook.com/sharer/sharer.php?${params}`, '_blank');
 }
 
 function copyLink(btn) {
