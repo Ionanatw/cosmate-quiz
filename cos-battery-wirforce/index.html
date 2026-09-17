@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COS 最大電量是多少？</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cousine:wght@400;700&family=Noto+Sans+TC:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --card-radius: 20px;
+    /* WirForce 2026 配色（取自 wirforce.com.tw 官網 CSS） */
+    --wf-lime: #d4ff00;
+    --wf-yellow: #ffff01;
+    --wf-olive: #8fb300;
+    --wf-green: #00ff80;
+    --wf-cyan: #00aaff;
+    --wf-magenta: #c0147c;
+    --wf-badge: #ffee00;
+    --text: #f0ffe8;
+    --bg-dark: #061a1a;
+    --card-bg: #0b2b2a;
+    --field-bg: #1a3a32;
+    --mono: 'Cousine', ui-monospace, Menlo, monospace;
+  }
+
+  body {
+    font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: radial-gradient(ellipse 120% 60% at 50% 0%, #0d3535 0%, var(--bg-dark) 70%) fixed, var(--bg-dark);
+    color: var(--text);
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  /* ============ SHARED CARD FRAME ============ */
+  .card-frame {
+    position: relative;
+    width: 340px;
+    max-width: 92vw;
+    border-radius: var(--card-radius);
+    background: var(--card-bg);
+    border: 3px solid rgba(212,255,0,0.12);
+    overflow: hidden;
+    box-shadow:
+      0 0 30px rgba(212, 255, 0, 0.12),
+      0 20px 60px rgba(0,0,0,0.5);
+  }
+  .card-frame::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: var(--card-radius);
+    padding: 3px;
+    background: linear-gradient(135deg, var(--wf-lime), var(--wf-yellow), var(--wf-green), var(--wf-lime));
+    background-size: 300% 300%;
+    animation: borderShimmer 4s ease infinite;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    z-index: 1;
+    pointer-events: none;
+  }
+  @keyframes borderShimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* ============ SCREEN CONTAINER ============ */
+  .screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100dvh;
+    padding: 24px 16px;
+    animation: fadeIn 0.5s ease;
+  }
+  .screen.active { display: flex; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============ COVER CARD ============ */
+  .cover-card {
+    padding: 0;
+    text-align: center;
+  }
+  .cover-top {
+    background: linear-gradient(180deg, #1a4a38 0%, var(--card-bg) 100%);
+    padding: 36px 28px 20px;
+    position: relative;
+  }
+  .cover-badge {
+    display: inline-block;
+    background: var(--wf-badge);
+    color: var(--bg-dark);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+
+  /* Battery Icon */
+  .battery-icon {
+    position: relative;
+    width: 120px;
+    height: 200px;
+    margin: 0 auto 20px;
+  }
+  .battery-body {
+    width: 100px;
+    height: 170px;
+    border: 4px solid rgba(212,255,0,0.35);
+    border-radius: 14px;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    overflow: hidden;
+    background: rgba(0,0,0,0.3);
+  }
+  .battery-tip {
+    width: 40px;
+    height: 14px;
+    background: rgba(212,255,0,0.35);
+    border-radius: 6px 6px 0 0;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .battery-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 65%;
+    background: linear-gradient(0deg, var(--wf-olive), var(--wf-lime), var(--wf-yellow));
+    border-radius: 0 0 10px 10px;
+    animation: batteryPulse 2s ease-in-out infinite;
+  }
+  .battery-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.3), transparent);
+  }
+  .battery-text {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 28px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    z-index: 2;
+  }
+  @keyframes batteryPulse {
+    0%, 100% { opacity: 0.9; }
+    50% { opacity: 1; }
+  }
+  .battery-lightning {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    z-index: 3;
+    filter: drop-shadow(0 0 10px rgba(6, 26, 26, 0.9));
+    animation: lightningFlash 2.5s ease-in-out infinite;
+  }
+  @keyframes lightningFlash {
+    0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+  }
+
+  .cover-title {
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, #fff, var(--wf-lime));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .cover-subtitle {
+    font-size: 13px;
+    color: rgba(240,255,232,0.6);
+    line-height: 1.6;
+    margin-bottom: 4px;
+  }
+
+  .cover-bottom {
+    padding: 20px 28px 32px;
+    background: linear-gradient(180deg, var(--card-bg), #071f1e);
+  }
+  .cover-taglines {
+    font-size: 12.5px;
+    color: rgba(240,255,232,0.55);
+    line-height: 1.8;
+    margin-bottom: 24px;
+  }
+
+  .btn-start {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 14px;
+    font-size: 18px;
+    font-weight: 900;
+    font-family: inherit;
+    color: var(--bg-dark);
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--wf-lime), var(--wf-yellow));
+    box-shadow: 0 0 24px rgba(255, 255, 1, 0.45);
+    transition: all 0.2s;
+    letter-spacing: 2px;
+  }
+  .btn-start:active {
+    transform: scale(0.97);
+    box-shadow: 0 0 12px rgba(255, 255, 1, 0.35);
+  }
+
+  /* ============ QUESTION CARD ============ */
+  .question-card {
+    padding: 0;
+  }
+  /* 答題畫面用 WirForce 官網外型：直角、四角角框、淡格線背景（封面／計算中／結果維持圓角） */
+  #screen-question {
+    background:
+      linear-gradient(rgba(212,255,0,0.035) 1px, transparent 1px) 0 0 / 48px 48px,
+      linear-gradient(90deg, rgba(212,255,0,0.035) 1px, transparent 1px) 0 0 / 48px 48px;
+  }
+  .question-card {
+    --card-radius: 2px;
+    border: 1px solid rgba(212,255,0,0.14);
+  }
+  .question-card::before {
+    --b: var(--wf-lime);
+    inset: 0;
+    padding: 0;
+    border-radius: 0;
+    animation: none;
+    -webkit-mask: none;
+    mask: none;
+    background:
+      linear-gradient(var(--b), var(--b)) top left / 18px 2px,
+      linear-gradient(var(--b), var(--b)) top left / 2px 18px,
+      linear-gradient(var(--b), var(--b)) top right / 18px 2px,
+      linear-gradient(var(--b), var(--b)) top right / 2px 18px,
+      linear-gradient(var(--b), var(--b)) bottom left / 18px 2px,
+      linear-gradient(var(--b), var(--b)) bottom left / 2px 18px,
+      linear-gradient(var(--b), var(--b)) bottom right / 18px 2px,
+      linear-gradient(var(--b), var(--b)) bottom right / 2px 18px;
+    background-repeat: no-repeat;
+    filter: drop-shadow(0 0 4px var(--b));
+    z-index: 3;
+  }
+  .q-header {
+    padding: 20px 24px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(212,255,0,0.1);
+  }
+  .q-number {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--wf-lime);
+    font-family: var(--mono);
+    letter-spacing: 2px;
+  }
+  .q-progress-bar {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 0;
+    margin-left: 14px;
+    overflow: hidden;
+  }
+  .q-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--wf-olive), var(--wf-lime));
+    border-radius: 0;
+    transition: width 0.4s ease;
+  }
+
+  .q-body {
+    padding: 24px 24px 8px;
+  }
+  .q-text {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    min-height: 52px;
+  }
+
+  .q-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 24px 28px;
+  }
+  .q-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 2px;
+    background: rgba(26,58,50,0.55);
+    border: 2px solid rgba(212,255,0,0.08);
+    cursor: pointer;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .q-option:active {
+    transform: scale(0.97);
+  }
+  .q-option:hover {
+    border-color: rgba(212, 255, 0, 0.35);
+    background: rgba(212, 255, 0, 0.06);
+  }
+  .q-option.selected {
+    border-color: var(--wf-lime);
+    background: rgba(212, 255, 0, 0.12);
+    box-shadow: 0 0 15px rgba(212, 255, 0, 0.2);
+  }
+  .q-option-letter {
+    width: 32px;
+    height: 32px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 900;
+    background: rgba(212,255,0,0.08);
+    color: rgba(240,255,232,0.6);
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .q-option.selected .q-option-letter {
+    background: var(--wf-lime);
+    color: var(--bg-dark);
+  }
+  .q-option-text {
+    font-size: 14.5px;
+    line-height: 1.4;
+    color: rgba(240,255,232,0.85);
+  }
+  .q-option.selected .q-option-text {
+    color: var(--text);
+  }
+
+  /* ============ LOADING SCREEN ============ */
+  .loading-content {
+    text-align: center;
+  }
+  .loading-battery {
+    width: 80px;
+    height: 130px;
+    margin: 0 auto 30px;
+    position: relative;
+  }
+  .loading-battery .battery-body {
+    width: 70px;
+    height: 110px;
+    border-width: 3px;
+  }
+  .loading-battery .battery-tip {
+    width: 30px;
+    height: 10px;
+  }
+  .loading-battery .battery-fill {
+    animation: chargeFill 2.5s ease-in-out forwards;
+  }
+  @keyframes chargeFill {
+    0% { height: 5%; }
+    100% { height: 95%; }
+  }
+  .loading-text {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--wf-lime);
+    animation: loadBlink 0.8s ease infinite;
+  }
+  @keyframes loadBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .loading-sub {
+    font-size: 13px;
+    color: rgba(240,255,232,0.45);
+    margin-top: 8px;
+  }
+
+  /* ============ RESULT CARD ============ */
+  .result-card {
+    padding: 0;
+    text-align: center;
+    overflow: visible;
+  }
+
+  /* Each tier gets unique colors */
+  .result-card[data-tier="1"] { --tier-color: #95ced8; --tier-glow: rgba(149,206,216,0.4); --tier-gradient: linear-gradient(135deg, #3a8bc9, #95ced8); }
+  .result-card[data-tier="2"] { --tier-color: #00aaff; --tier-glow: rgba(0,170,255,0.4); --tier-gradient: linear-gradient(135deg, #00aaff, #00ddff); }
+  .result-card[data-tier="3"] { --tier-color: #00ff80; --tier-glow: rgba(0,255,128,0.4); --tier-gradient: linear-gradient(135deg, #00ff80, #00ddff); }
+  .result-card[data-tier="4"] { --tier-color: #ff3d8b; --tier-glow: rgba(255,0,111,0.4); --tier-gradient: linear-gradient(135deg, #ff006f, #ff6fb0); }
+  .result-card[data-tier="5"] { --tier-color: #d4ff00; --tier-glow: rgba(255,255,1,0.5); --tier-gradient: linear-gradient(135deg, #d4ff00, #ffff01); }
+
+  .result-card::before {
+    background: linear-gradient(135deg, var(--tier-color), var(--wf-yellow), var(--tier-color));
+    background-size: 300% 300%;
+  }
+
+  .result-header {
+    padding: 28px 24px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .result-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--tier-gradient);
+    opacity: 0.15;
+  }
+
+  .result-rarity {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 16px;
+    border-radius: 20px;
+    border: 1.5px solid var(--tier-color);
+    color: var(--tier-color);
+    margin-bottom: 14px;
+    position: relative;
+  }
+
+  .result-mah {
+    font-size: 52px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 4px;
+    position: relative;
+    background: var(--tier-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 20px var(--tier-glow));
+  }
+  .result-mah-unit {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--tier-color);
+    opacity: 0.8;
+  }
+
+  .result-battery-visual {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin: 16px 0;
+  }
+  .mini-bar {
+    width: 24px;
+    height: 8px;
+    border-radius: 2px;
+    background: rgba(240,255,232,0.1);
+    transition: all 0.3s ease;
+  }
+  .mini-bar.filled {
+    background: var(--tier-color);
+    box-shadow: 0 0 8px var(--tier-glow);
+  }
+
+  .result-body {
+    padding: 20px 24px;
+  }
+  .result-title {
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1.4;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  .result-desc {
+    font-size: 14px;
+    line-height: 1.7;
+    color: rgba(240,255,232,0.7);
+    margin-bottom: 20px;
+  }
+
+  .result-divider {
+    width: 40px;
+    height: 2px;
+    background: var(--tier-color);
+    opacity: 0.4;
+    margin: 0 auto 20px;
+    border-radius: 1px;
+  }
+
+  /* Holographic shimmer overlay */
+  .holo-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      125deg,
+      transparent 0%,
+      rgba(255,255,255,0.03) 25%,
+      rgba(255,255,255,0.08) 50%,
+      rgba(255,255,255,0.03) 75%,
+      transparent 100%
+    );
+    background-size: 200% 200%;
+    animation: holoMove 3s ease infinite;
+    pointer-events: none;
+    border-radius: var(--card-radius);
+    z-index: 2;
+  }
+  @keyframes holoMove {
+    0%, 100% { background-position: 0% 0%; }
+    50% { background-position: 100% 100%; }
+  }
+
+  /* ============ APP DOWNLOAD ============ */
+  .btn-app {
+    position: relative;
+    z-index: 3; /* 蓋在 holo-overlay 上方 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 12px 0 0;
+    padding: 15px 16px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--wf-lime), var(--wf-yellow));
+    color: var(--bg-dark);
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-decoration: none;
+    box-shadow: 0 0 20px rgba(255, 255, 1, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-app:active {
+    transform: scale(0.97);
+    box-shadow: 0 0 10px rgba(255, 255, 1, 0.3);
+  }
+  .btn-app:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 3px;
+  }
+  .btn-app svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+  /* ============ SHARE BUTTONS ============ */
+  .share-section {
+    padding: 0 24px 28px;
+  }
+  .share-label {
+    font-size: 11px;
+    color: rgba(240,255,232,0.45);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .share-btns {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .share-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 0;
+    padding: 10px 2px 9px;
+    white-space: nowrap;
+    border-radius: 10px;
+    border: 1.5px solid rgba(212,255,0,0.15);
+    background: rgba(26,58,50,0.55);
+    color: rgba(240,255,232,0.8);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .share-btn:hover {
+    background: rgba(212,255,0,0.08);
+    border-color: rgba(212,255,0,0.35);
+  }
+  .share-btn svg { width: 20px; height: 20px; }
+
+  /* 下載結果卡＋再測一次：同一列、等高 */
+  .result-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .btn-retry {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 13px 4px;
+    margin: 0;
+    white-space: nowrap;
+    border: 1.5px solid rgba(212,255,0,0.18);
+    border-radius: 12px;
+    background: transparent;
+    color: rgba(240,255,232,0.65);
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+  .btn-retry:hover {
+    border-color: rgba(212,255,0,0.4);
+    color: var(--text);
+  }
+
+  .btn-download {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 13px 4px;
+    margin: 0;
+    white-space: nowrap;
+    border: 1.5px solid var(--wf-cyan);
+    border-radius: 12px;
+    background: rgba(0,170,255,0.08);
+    color: var(--wf-cyan);
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    box-shadow: 0 0 14px rgba(0, 170, 255, 0.25);
+  }
+  .btn-download:active {
+    transform: scale(0.97);
+  }
+  .btn-download svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  /* 窄螢幕（約 320px）：分享列四欄仍放得下 */
+  @media (max-width: 340px) {
+    .share-btn { font-size: 11px; }
+  }
+
+  /* ============ LOGO ============ */
+  .logo-footer {
+    margin-top: 20px;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+  }
+  .logo-footer:hover { opacity: 0.6; }
+  .logo-footer img {
+    height: calc(100dvh * 0.05);
+    max-height: 42px;
+    min-height: 24px;
+    width: auto;
+    object-fit: contain;
+    filter: brightness(2);
+  }
+
+  /* ============ BG PARTICLES ============ */
+  .particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: var(--wf-lime);
+    border-radius: 50%;
+    opacity: 0;
+    animation: float 6s ease-in-out infinite;
+  }
+  @keyframes float {
+    0% { opacity: 0; transform: translateY(100vh) scale(0); }
+    20% { opacity: 0.6; }
+    80% { opacity: 0.3; }
+    100% { opacity: 0; transform: translateY(-10vh) scale(1); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Background particles -->
+<div class="particles" id="particles"></div>
+
+<!-- ====== SCREEN 1: COVER ====== -->
+<div class="screen active" id="screen-cover">
+  <div class="card-frame cover-card">
+    <div class="cover-top">
+      <div class="cover-badge">COS BATTERY TEST</div>
+
+      <div class="battery-icon">
+        <div class="battery-tip"></div>
+        <div class="battery-body">
+          <div class="battery-fill"></div>
+          <span class="battery-lightning">&#9889;</span>
+        </div>
+      </div>
+
+      <div class="cover-title">COS 最大電量<br>是多少？</div>
+      <div class="cover-subtitle">10 題測出你的場次續航力</div>
+    </div>
+    <div class="cover-bottom">
+      <div class="cover-taglines">
+        每個場次都想去，但電量到底夠不夠？<br>
+        你是傳說中的攪拌王？<br>
+        還是電量低到去一小時就回家？
+      </div>
+      <button class="btn-start" onclick="startQuiz()">開 始 測 驗</button>
+    </div>
+  </div>
+  <div class="logo-footer"><img src="../cos-battery-quiz/logo.png" alt="COS'MATE"></div>
+</div>
+
+<!-- ====== SCREEN 2: QUESTIONS ====== -->
+<div class="screen" id="screen-question">
+  <div class="card-frame question-card">
+    <div class="q-header">
+      <span class="q-number" id="qNum">Q1 / 10</span>
+      <div class="q-progress-bar">
+        <div class="q-progress-fill" id="qProgress" style="width:10%"></div>
+      </div>
+    </div>
+    <div class="q-body">
+      <div class="q-text" id="qText"></div>
+    </div>
+    <div class="q-options" id="qOptions"></div>
+  </div>
+  <div class="logo-footer"><img src="../cos-battery-quiz/logo.png" alt="COS'MATE"></div>
+</div>
+
+<!-- ====== SCREEN 3: LOADING ====== -->
+<div class="screen" id="screen-loading">
+  <div class="loading-content">
+    <div class="loading-battery">
+      <div class="battery-tip"></div>
+      <div class="battery-body">
+        <div class="battery-fill"></div>
+      </div>
+    </div>
+    <div class="loading-text">正在計算你的電量...</div>
+    <div class="loading-sub">偵測 COS 場次續航能力中</div>
+  </div>
+</div>
+
+<!-- ====== SCREEN 4: RESULT ====== -->
+<div class="screen" id="screen-result">
+  <div class="card-frame result-card" id="resultCard">
+    <div class="holo-overlay"></div>
+    <div class="result-header">
+      <div class="result-rarity" id="resultRarity"></div>
+      <div class="result-mah" id="resultMah"></div>
+      <div class="result-mah-unit">mAh</div>
+      <div class="result-battery-visual" id="resultBars"></div>
+    </div>
+    <div class="result-body">
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-divider"></div>
+      <div class="result-desc" id="resultDesc"></div>
+    </div>
+    <div class="share-section">
+      <div class="share-label">分享你的電量</div>
+      <div class="share-btns">
+        <button class="share-btn" onclick="shareThreads()">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142c-.126-.742-.375-1.332-.75-1.757-.513-.586-1.308-.883-2.359-.89h-.029c-.844 0-1.992.232-2.721 1.32L7.734 7.847c.98-1.454 2.568-2.256 4.478-2.256h.044c3.194.02 5.097 1.975 5.287 5.388.108.046.216.094.321.142 1.49.7 2.58 1.761 3.154 3.07.797 1.82.871 4.79-1.548 7.158-1.85 1.81-4.094 2.628-7.277 2.65Zm1.003-11.69c-.242 0-.487.007-.739.021-1.836.103-2.98.946-2.916 2.143.067 1.256 1.452 1.839 2.784 1.767 1.224-.065 2.818-.543 3.086-3.71a10.5 10.5 0 0 0-2.215-.221z"/></svg>
+          Threads
+        </button>
+        <button class="share-btn" onclick="shareLine()">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+          LINE
+        </button>
+        <button class="share-btn" onclick="shareFB()">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          FB
+        </button>
+        <button class="share-btn" onclick="copyLink(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          複製連結
+        </button>
+      </div>
+      <div class="result-actions">
+        <button class="btn-download" onclick="downloadResult()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          下載結果卡
+        </button>
+        <button class="btn-retry" onclick="restart()">再 測 一 次</button>
+      </div>
+      <a class="btn-app" href="https://3xt97.app.link/thread?utm_source=threads&amp;utm_medium=social&amp;utm_content=link_in_bio" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg>
+        下載 CosMate App
+      </a>
+    </div>
+  </div>
+  <div class="logo-footer"><img src="../cos-battery-quiz/logo.png" alt="COS'MATE"></div>
+</div>
+
+<script>
+// ============ QUIZ DATA ============
+const questions = [
+  {
+    text: "場次當天，你比較喜歡\u2026",
+    options: [
+      { label: "只跟幾個 coser 熟人聊天拍照", score: 1 },
+      { label: "5\u20136 人小團體一起逛", score: 2 },
+      { label: "越多 coser 一起熱鬧越好", score: 3 }
+    ]
+  },
+  {
+    text: "場次結束後，你通常\u2026",
+    options: [
+      { label: "直接躺平 0 體力", score: 1 },
+      { label: "回家修圖返照＋場後徵友", score: 2 },
+      { label: "還想續攤去吃尾牙或唱 K", score: 3 }
+    ]
+  },
+  {
+    text: "連續參加 3 天 cosplay 活動，你\u2026",
+    options: [
+      { label: "第一天就覺得累", score: 1 },
+      { label: "第二天開始想後悔", score: 2 },
+      { label: "每天都愈來愈有活力", score: 3 }
+    ]
+  },
+  {
+    text: "講到拍照時，你比較是\u2026",
+    options: [
+      { label: "純欣賞大家的美貌", score: 1 },
+      { label: "只跟認識的 coser 拍", score: 2 },
+      { label: "直接揪團或到處找人合照", score: 3 }
+    ]
+  },
+  {
+    text: "遇到新認識的 coser，你\u2026",
+    options: [
+      { label: "點頭微笑", score: 1 },
+      { label: "聊幾句再看感覺", score: 2 },
+      { label: "馬上交換 IG 加好友", score: 3 }
+    ]
+  },
+  {
+    text: "參加陌生 cosplay 聚會，你\u2026",
+    options: [
+      { label: "寧願在家追番", score: 1 },
+      { label: "找 1\u20132 人先認識", score: 2 },
+      { label: "很快成為話題中心", score: 3 }
+    ]
+  },
+  {
+    text: "cosplay 在場次上聊天，你\u2026",
+    options: [
+      { label: "安靜補妝就好", score: 1 },
+      { label: "聊自己喜歡的角色", score: 2 },
+      { label: "喜歡聽別人推薦動漫", score: 3 }
+    ]
+  },
+  {
+    text: "遇到陌生人跟你聊天時，你\u2026",
+    options: [
+      { label: "不斷想什麼時候可以結束", score: 1 },
+      { label: "看心情決定", score: 2 },
+      { label: "多認識人超有趣，有時間就多聊", score: 3 }
+    ]
+  },
+  {
+    text: "參加跨區大型活動，你\u2026",
+    options: [
+      { label: "邊想著這樣還是太勉強了", score: 1 },
+      { label: "邊期待邊整理造型", score: 2 },
+      { label: "興奮到一路跟朋友傳訊聊天", score: 3 }
+    ]
+  },
+  {
+    text: "cosplay 團體照時，你\u2026",
+    options: [
+      { label: "後排邊緣人", score: 1 },
+      { label: "中間位置", score: 2 },
+      { label: "站在 C 位前排笑最開", score: 3 }
+    ]
+  }
+];
+
+const results = [
+  {
+    tier: 1,
+    rarity: "COMMON",
+    range: [0, 4000],
+    title: "新手電量\u30FB一不小心就斷電",
+    desc: "低電量型，場次拍照打卡一次就 GG。\n實體活動要先顧自己的電量，不想聊就不聊！",
+    bars: 2
+  },
+  {
+    tier: 2,
+    rarity: "UNCOMMON",
+    range: [4000, 6000],
+    title: "剛好出門一次的電量\u30FB把電留給親友吧",
+    desc: "適合 2-3 人小團，自己 cos 出角，\n要小心結束後直接回家躺三天充電\uD83D\uDCA4",
+    bars: 4
+  },
+  {
+    tier: 3,
+    rarity: "RARE",
+    range: [6000, 8500],
+    title: "有快充模式\u30FB能玩超瘋也能獨處",
+    desc: "場次全能型！能跟大團體瘋玩\uFF0C也能一個人安靜補妝\u3002\n熟人圈充電超快\uFF0C新朋友需要暖身時間\uD83D\uDD0B",
+    bars: 6
+  },
+  {
+    tier: 4,
+    rarity: "EPIC",
+    range: [8500, 10000],
+    title: "你就是團的話題核心\u30FB到處幫別人充電",
+    desc: "團體核心！拍照幫忙、角色討論、續攤唱 K，\n續航穩定，堪稱 cos 界的行動電源站\u26A1",
+    bars: 8
+  },
+  {
+    tier: 5,
+    rarity: "LEGENDARY",
+    range: [10000, 99999],
+    title: "COS 圈的攪拌王\uFF0C你的熱情最帶電",
+    desc: "場次之神！陌生人秒熟、連續三天攪拌也不累。\n只要你出現，整個場次電量都上升 20%！\uD83D\uDC51",
+    bars: 10
+  }
+];
+
+// ============ SCORING ============
+// Segmented curve for 10 questions (score range 10–30)
+function calculateMah(score) {
+  if (score <= 14) return Math.round(1500 + (score - 10) * 500);     // 10→1500, 14→3500
+  if (score <= 18) return Math.round(3800 + (score - 14) * 600);     // 15→4400, 18→6200
+  if (score <= 23) return Math.round(6200 + (score - 18) * 500);     // 19→6700, 23→8700
+  if (score <= 27) return Math.round(8700 + (score - 23) * 375);     // 24→9075, 27→10200
+  return Math.round(10200 + (score - 27) * 600);                      // 28→10800, 30→12000
+}
+
+function getResult(mah) {
+  for (let i = results.length - 1; i >= 0; i--) {
+    if (mah >= results[i].range[0]) return results[i];
+  }
+  return results[0];
+}
+
+// ============ STATE ============
+let currentQ = 0;
+let totalScore = 0;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  el.classList.remove('active');
+  void el.offsetWidth; // trigger reflow for animation
+  el.classList.add('active');
+}
+
+function startQuiz() {
+  currentQ = 0;
+  totalScore = 0;
+  renderQuestion();
+  showScreen('screen-question');
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  document.getElementById('qNum').textContent = `Q${currentQ + 1} / 10`;
+  document.getElementById('qProgress').style.width = `${(currentQ + 1) * 10}%`;
+  document.getElementById('qText').textContent = q.text;
+
+  const container = document.getElementById('qOptions');
+  container.innerHTML = '';
+  const letters = ['A', 'B', 'C'];
+  q.options.forEach((opt, i) => {
+    const div = document.createElement('div');
+    div.className = 'q-option';
+    div.innerHTML = `
+      <span class="q-option-letter">${letters[i]}</span>
+      <span class="q-option-text">${opt.label}</span>
+    `;
+    div.addEventListener('click', () => selectOption(opt.score, div));
+    container.appendChild(div);
+  });
+}
+
+function selectOption(score, el) {
+  // Visual feedback
+  document.querySelectorAll('.q-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+
+  totalScore += score;
+
+  setTimeout(() => {
+    currentQ++;
+    if (currentQ >= questions.length) {
+      showLoading();
+    } else {
+      renderQuestion();
+    }
+  }, 350);
+}
+
+function showLoading() {
+  showScreen('screen-loading');
+  setTimeout(showResult, 2800);
+}
+
+function showResult() {
+  const mah = calculateMah(totalScore);
+  const r = getResult(mah);
+
+  const card = document.getElementById('resultCard');
+  card.setAttribute('data-tier', r.tier);
+
+  document.getElementById('resultRarity').textContent = r.rarity;
+  document.getElementById('resultMah').textContent = mah.toLocaleString();
+  document.getElementById('resultTitle').textContent = r.title;
+  document.getElementById('resultDesc').innerHTML = r.desc.replace(/\n/g, '<br>');
+
+  // Battery bars
+  const barsEl = document.getElementById('resultBars');
+  barsEl.innerHTML = '';
+  for (let i = 0; i < 10; i++) {
+    const bar = document.createElement('div');
+    bar.className = 'mini-bar' + (i < r.bars ? ' filled' : '');
+    if (i < r.bars) bar.style.transitionDelay = `${i * 0.08}s`;
+    barsEl.appendChild(bar);
+  }
+
+  showScreen('screen-result');
+}
+
+function restart() {
+  showScreen('screen-cover');
+}
+
+// ============ SHARE ============
+function getShareText() {
+  const mah = document.getElementById('resultMah').textContent;
+  const title = document.getElementById('resultTitle').textContent;
+  return `我的 COS 最大電量是 ${mah} mAh！\n${title}\n\n你的呢？快來測測看`;
+}
+
+function shareThreads() {
+  const params = new URLSearchParams({ text: getShareText(), url: window.location.href });
+  window.open(`https://www.threads.com/intent/post?${params}`, '_blank');
+}
+
+function shareLine() {
+  const text = encodeURIComponent(getShareText());
+  window.open(`https://social-plugins.line.me/lineit/share?text=${text}`, '_blank');
+}
+
+function shareFB() {
+  window.open(`https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(getShareText())}`, '_blank');
+}
+
+function copyLink(btn) {
+  const text = getShareText() + '\n' + window.location.href;
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.innerHTML;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> 已複製！';
+    setTimeout(() => { btn.innerHTML = original; }, 1500);
+  });
+}
+
+// ============ PARTICLES ============
+// ============ DOWNLOAD (Canvas API) ============
+function downloadResult() {
+  const btn = document.querySelector('.btn-download');
+  btn.textContent = '產生中...';
+  btn.disabled = true;
+
+  try {
+    const card = document.getElementById('resultCard');
+    const tier = parseInt(card.getAttribute('data-tier'));
+    const rarity = document.getElementById('resultRarity').textContent;
+    const mah = document.getElementById('resultMah').textContent;
+    const title = document.getElementById('resultTitle').textContent;
+    const desc = document.getElementById('resultDesc').textContent;
+    const r = results.find(x => x.tier === tier);
+
+    const S = 2; // scale
+    const W = 340 * S, RAD = 20 * S;
+    // Dynamically calculate height based on content
+    const headerH = 190 * S;
+    const bodyPadTop = 20 * S, bodyPadBot = 24 * S;
+    const titleFontSize = 18 * S, descFontSize = 14 * S;
+    const lineHeight = descFontSize * 1.7;
+    // Estimate desc lines
+    const maxTextW = (340 - 48) * S;
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    // Temp measure desc lines
+    ctx.font = `${descFontSize}px "Noto Sans TC", sans-serif`;
+    const descLines = wrapText(ctx, desc, maxTextW);
+    const titleLines = wrapTextBold(ctx, title, maxTextW, titleFontSize);
+
+    const bodyH = bodyPadTop + (titleLines.length * titleFontSize * 1.4) + 12*S + 2*S + 20*S + (descLines.length * lineHeight) + bodyPadBot;
+    const footerH = 36 * S;
+    const H = headerH + bodyH + footerH;
+
+    canvas.width = W;
+    canvas.height = H;
+
+    // Tier colors
+    const tierColors = {
+      1: { color: '#95ced8', grad: ['#3a8bc9', '#95ced8'] },
+      2: { color: '#00aaff', grad: ['#00aaff', '#00ddff'] },
+      3: { color: '#00ff80', grad: ['#00ff80', '#00ddff'] },
+      4: { color: '#ff3d8b', grad: ['#ff006f', '#ff6fb0'] },
+      5: { color: '#d4ff00', grad: ['#d4ff00', '#ffff01'] }
+    };
+    const tc = tierColors[tier];
+
+    // Background
+    ctx.fillStyle = '#0b2b2a';
+    roundRect(ctx, 0, 0, W, H, RAD);
+    ctx.fill();
+
+    // Header gradient overlay
+    const hGrad = ctx.createLinearGradient(0, 0, W, headerH);
+    hGrad.addColorStop(0, tc.grad[0]);
+    hGrad.addColorStop(1, tc.grad[1]);
+    ctx.save();
+    roundRectTop(ctx, 0, 0, W, headerH, RAD);
+    ctx.clip();
+    ctx.fillStyle = hGrad;
+    ctx.globalAlpha = 0.15;
+    ctx.fillRect(0, 0, W, headerH);
+    ctx.globalAlpha = 1;
+    ctx.restore();
+
+    // Rarity badge
+    const badgeY = 32 * S;
+    ctx.font = `bold ${11 * S}px "Noto Sans TC", sans-serif`;
+    ctx.letterSpacing = `${2 * S}px`;
+    const badgeW = ctx.measureText(rarity).width + 32 * S;
+    const badgeX = (W - badgeW) / 2;
+    ctx.strokeStyle = tc.color;
+    ctx.lineWidth = 1.5 * S;
+    roundRect(ctx, badgeX, badgeY, badgeW, 24 * S, 20 * S);
+    ctx.stroke();
+    ctx.fillStyle = tc.color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(rarity, W / 2, badgeY + 12 * S);
+    ctx.letterSpacing = '0px';
+
+    // mAh number (gradient text)
+    const mahY = 88 * S;
+    ctx.font = `900 ${52 * S}px "Noto Sans TC", sans-serif`;
+    const mahGrad = ctx.createLinearGradient(W * 0.2, mahY - 30 * S, W * 0.8, mahY + 30 * S);
+    mahGrad.addColorStop(0, tc.grad[0]);
+    mahGrad.addColorStop(1, tc.grad[1]);
+    ctx.fillStyle = mahGrad;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(mah, W / 2, mahY);
+
+    // mAh unit
+    ctx.font = `bold ${18 * S}px "Noto Sans TC", sans-serif`;
+    ctx.fillStyle = tc.color;
+    ctx.globalAlpha = 0.8;
+    ctx.fillText('mAh', W / 2, mahY + 36 * S);
+    ctx.globalAlpha = 1;
+
+    // Battery bars
+    const barW = 24 * S, barH = 8 * S, barGap = 4 * S;
+    const totalBarW = 10 * barW + 9 * barGap;
+    let barX = (W - totalBarW) / 2;
+    const barY = 150 * S;
+    for (let i = 0; i < 10; i++) {
+      ctx.fillStyle = i < r.bars ? tc.color : 'rgba(240,255,232,0.1)';
+      roundRect(ctx, barX, barY, barW, barH, 2 * S);
+      ctx.fill();
+      if (i < r.bars) {
+        ctx.shadowColor = tc.color;
+        ctx.shadowBlur = 8 * S;
+        roundRect(ctx, barX, barY, barW, barH, 2 * S);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+      barX += barW + barGap;
+    }
+
+    // Body - Title
+    let curY = headerH + bodyPadTop;
+    ctx.font = `900 ${titleFontSize}px "Noto Sans TC", sans-serif`;
+    ctx.fillStyle = '#f0ffe8';
+    ctx.textAlign = 'center';
+    titleLines.forEach(line => {
+      ctx.fillText(line, W / 2, curY + titleFontSize * 0.5);
+      curY += titleFontSize * 1.4;
+    });
+
+    // Divider
+    curY += 6 * S;
+    const divW = 40 * S;
+    ctx.fillStyle = tc.color;
+    ctx.globalAlpha = 0.4;
+    ctx.fillRect((W - divW) / 2, curY, divW, 2 * S);
+    ctx.globalAlpha = 1;
+    curY += 2 * S + 16 * S;
+
+    // Body - Description
+    ctx.font = `${descFontSize}px "Noto Sans TC", sans-serif`;
+    ctx.fillStyle = 'rgba(240,255,232,0.7)';
+    descLines.forEach(line => {
+      ctx.fillText(line, W / 2, curY + descFontSize * 0.5);
+      curY += lineHeight;
+    });
+
+    // Footer - COS'MATE text
+    ctx.font = `bold ${10 * S}px "Noto Sans TC", sans-serif`;
+    ctx.fillStyle = 'rgba(212,255,0,0.45)';
+    ctx.fillText("COS'MATE", W / 2, H - 16 * S);
+
+    // Border glow
+    ctx.strokeStyle = tc.color;
+    ctx.lineWidth = 3 * S;
+    ctx.globalAlpha = 0.5;
+    roundRect(ctx, 1.5 * S, 1.5 * S, W - 3 * S, H - 3 * S, RAD);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // Download
+    const link = document.createElement('a');
+    link.download = 'COS電量測驗結果.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch(e) {
+    console.error('Download error:', e);
+  }
+
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 下載結果卡';
+  btn.disabled = false;
+}
+
+// Canvas helpers
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function roundRectTop(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h);
+  ctx.lineTo(x, y + h);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function wrapText(ctx, text, maxW) {
+  const lines = [];
+  // Split on explicit line breaks first
+  text.split('\n').forEach(paragraph => {
+    let line = '';
+    for (const ch of paragraph) {
+      const test = line + ch;
+      if (ctx.measureText(test).width > maxW && line) {
+        lines.push(line);
+        line = ch;
+      } else {
+        line = test;
+      }
+    }
+    if (line) lines.push(line);
+  });
+  return lines;
+}
+
+function wrapTextBold(ctx, text, maxW, fontSize) {
+  ctx.save();
+  ctx.font = `900 ${fontSize}px "Noto Sans TC", sans-serif`;
+  const result = wrapText(ctx, text, maxW);
+  ctx.restore();
+  return result;
+}
+
+// ============ PARTICLES ============
+(function initParticles() {
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 25; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDelay = Math.random() * 6 + 's';
+    p.style.animationDuration = (4 + Math.random() * 4) + 's';
+    const colors = ['#d4ff00', '#ffff01', '#00ff80', '#c0147c'];
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    container.appendChild(p);
+  }
+})();
+</script>
+</body>
+</html>
