@@ -7,6 +7,7 @@ CosMate 心理測驗站 — 動漫宅圈互動測驗集合。
 | 目錄 | 標題 | 正式網址 |
 |------|------|---------|
 | `otakumine/` | 動漫圈雷點分級表 | https://cosmate-otakumine.pages.dev/otakumine/ |
+| `cos-battery-quiz/` | COS 最大電量是多少？（社交電量，WirForce 2026 攤位用） | https://cosmate-otakumine.pages.dev/cos-battery-quiz/ |
 
 `shared/` 放跨測驗共用素材。
 
